@@ -17,7 +17,7 @@ def OutputPicture(name, data, width, height):
             arr1[i] = data[currentPos].toArray()
             currentPos += 1
 
-    imageio.imwrite(name, result)
+    imageio.imwrite("data/" + name, result)
 
 def PartitionToData(partition, center):
     size = 0
