@@ -72,69 +72,83 @@ class Point:
     def __ne__(self, other):
         return not self.__eq__(other)
 
-
-arr = imageio.imread('Rainbow.png')
-
-height  = len(arr)
-width = len(arr[0])
-
-data = []
-currentPos = 0
-for arr1 in arr:
-    for RGB in arr1:
-        data.append(Point(RGB[0], RGB[1], RGB[2], currentPos))
-        currentPos += 1
-
-print("Read in image with width: %d and height: %d, total lenth: %d" % (width, height, width * height))
-
-k = 3
-clusters = []
-clusterCenter = []
-oldClusterCenter = []
-for i in range(k):
-    clusters.append([])
-    clusterCenter.append(Point(random.random() * 255, random.random() * 255, random.random() * 255, -1))
-    oldClusterCenter.append(Point(0,0,0, -1))
-
-
-cont = True
-iteration = 0
-while(cont):
-    iteration += 1
-    print ("Starting iteration %d" % (iteration))
-    clusters = []
-    for i in range(k):
-        clusters.append([])
-
-    cont = False
+def continues(clusterCenter, oldClusterCenter):
     for i in range(len(clusterCenter)):
         if (clusterCenter[i] != oldClusterCenter[i]):
-            cont = True
+            return True
+    return False
+
+def main(k):
+    arr = imageio.imread('Image.png')
+
+    height  = len(arr)
+    width = len(arr[0])
+
+    data = []
+    currentPos = 0
+    for arr1 in arr:
+        for RGB in arr1:
+            data.append(Point(RGB[0], RGB[1], RGB[2], currentPos))
+            currentPos += 1
+
+    #print("Read in image with width: %d and height: %d, total lenth: %d" % (width, height, width * height))
+
+    clusters = []
+    clusterCenter = []
+    oldClusterCenter = []
+    for i in range(k):
+        clusters.append([])
+        clusterCenter.append(Point(random.random() * 255, random.random() * 255, random.random() * 255, -1))
+        oldClusterCenter.append(Point(0,0,0, -1))
+
+
+    iteration = 0
+    while(iteration < 100):
+        print ("Starting iteration %d" % (iteration))
+        clusters = []
+        for i in range(k):
+            clusters.append([])
+
+        if (not continues(clusterCenter, oldClusterCenter)):
             break;
 
-    for x in data:
-        smallestDistance = 100000000
-        smallestIndex = -1
+        iteration += 1
 
-        for i in range(len(clusterCenter)):
-            distance = x.distanceSquare(clusterCenter[i])
-            if (distance < smallestDistance):
-                smallestIndex = i
-                smallestDistance = distance
+        for x in data:
+            smallestDistance = 100000000
+            smallestIndex = -1
 
-        clusters[smallestIndex].append(x)
+            for i in range(len(clusterCenter)):
+                distance = x.distanceSquare(clusterCenter[i])
+                if (distance < smallestDistance):
+                    smallestIndex = i
+                    smallestDistance = distance
 
-    error = 0
-    for i in range(len(clusters)):
-        sum = Point(0, 0, 0, -1)
-        for x in clusters[i]:
-            sum += x
+            clusters[smallestIndex].append(x)
 
-        oldClusterCenter[i] = clusterCenter[i]
-        clusterCenter[i] = (1/float(len(clusters[i]))) * sum
+        error = 0
+        for i in range(len(clusters)):
+            sum = Point(0, 0, 0, -1)
+            for x in clusters[i]:
+                sum += x
 
-        for x in clusters[i]:
-            error += math.sqrt(x.distanceSquare(clusterCenter[i]))
+            oldClusterCenter[i] = clusterCenter[i]
+            clusterCenter[i] = (1/float(len(clusters[i]))) * sum
 
-    print("current error %f" % (error))
-    OutputPicture("Rainbowk%dI%d.png" % (k, iteration), PartitionToData(clusters, clusterCenter), width, height)
+            for x in clusters[i]:
+                error += math.sqrt(x.distanceSquare(clusterCenter[i]))
+
+        #print("current error %f" % (error))
+        OutputPicture("Image%dI%d.png" % (k, iteration), PartitionToData(clusters, clusterCenter), width, height)
+    return iteration, error
+
+errors = []
+iterations = []
+for i in range(1, 15):
+    iteration, error = main(i)
+    errors.append(error)
+    iterations.append(iteration)
+    print(i, iteration, error)
+
+print (errors)
+print (iterations)
